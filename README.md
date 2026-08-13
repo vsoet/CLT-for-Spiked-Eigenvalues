@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 1.8 seconds
-Output:
 # Numerical simulations for the spiked-eigenvalue CLTs
 
 This repository contains the Monte Carlo experiment accompanying the proof of

@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 2.9 seconds
-Output:
 """Monte Carlo check for the two closed outlier-variance formulas.
 
 The simulation uses NumPy only for the random-matrix calculation and Pillow

@@ -68,8 +68,8 @@ def simultaneous_draws(
     n: int,
     theta2: float,
     ell: float,
-) -> tuple[float, float, bool, bool, bool, float, float, int, int, bool]:
-    """Return overlap-associated outliers and finite-sample diagnostics."""
+) -> tuple[float, float]:
+    """Return the two overlap-associated sample outliers."""
 
     d = int(round(C * n))
     noise = rng.standard_normal((d, n)) / math.sqrt(n)
@@ -90,9 +90,6 @@ def simultaneous_draws(
 
     covariance_scores = candidate_vectors[0, :] ** 2
     mean_scores = (mean_direction @ candidate_vectors) ** 2
-    independent_collision = bool(
-        int(np.argmax(covariance_scores)) == int(np.argmax(mean_scores))
-    )
 
     # Jointly assign two distinct eigenvectors.  Normalization gives the two
     # population directions equal weight despite their different overlap
@@ -115,25 +112,7 @@ def simultaneous_draws(
 
     covariance_outlier = float(eigenvalues[covariance_index])
     mean_outlier = float(eigenvalues[mean_index])
-    mp_upper_edge = (1.0 + math.sqrt(C)) ** 2
-    crossing = covariance_outlier < mean_outlier
-    mean_below_edge = mean_outlier <= mp_upper_edge
-    covariance_below_edge = covariance_outlier <= mp_upper_edge
-    mean_rank = d - mean_index
-    covariance_rank = d - covariance_index
-
-    return (
-        mean_outlier,
-        covariance_outlier,
-        crossing,
-        mean_below_edge,
-        covariance_below_edge,
-        float(mean_scores[mean_local]),
-        float(covariance_scores[covariance_local]),
-        mean_rank,
-        covariance_rank,
-        independent_collision,
-    )
+    return mean_outlier, covariance_outlier
 
 
 def summarize(
@@ -234,19 +213,14 @@ def main() -> None:
             )
             mean_values = draws[:, 0]
             covariance_values = draws[:, 1]
-            crossing_frequency = float(np.mean(draws[:, 2]))
-            independent_collision_frequency = float(np.mean(draws[:, 9]))
 
-            for model, values, spike, center, variance, below_edge, overlap, rank in (
+            for model, values, spike, center, variance in (
                 (
                     "Mean shift",
                     mean_values,
                     theta2,
                     mean_center,
                     mean_theoretical_variance,
-                    draws[:, 3],
-                    draws[:, 5],
-                    draws[:, 7],
                 ),
                 (
                     "Covariance spike",
@@ -254,9 +228,6 @@ def main() -> None:
                     ell,
                     covariance_center,
                     covariance_theoretical_variance,
-                    draws[:, 4],
-                    draws[:, 6],
-                    draws[:, 8],
                 ),
             ):
                 row: dict[str, object] = {
@@ -265,19 +236,9 @@ def main() -> None:
                     "n": n,
                     "d": int(round(C * n)),
                     "spike": spike,
-                    "threshold": math.sqrt(C),
-                    "mp_upper_edge": (1.0 + math.sqrt(C)) ** 2,
                     "center": center,
-                    "center_edge_gap": center - (1.0 + math.sqrt(C)) ** 2,
                     "association_method": (
                         f"maximum normalized overlap among top {ASSOCIATION_WINDOW}"
-                    ),
-                    "crossing_frequency": crossing_frequency,
-                    "bulk_absorption_frequency": float(np.mean(below_edge)),
-                    "mean_squared_overlap": float(np.mean(overlap)),
-                    "mean_assigned_rank": float(np.mean(rank)),
-                    "independent_overlap_collision_frequency": (
-                        independent_collision_frequency
                     ),
                 }
                 row.update(summarize(values, n, center, variance))

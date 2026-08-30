@@ -2,8 +2,9 @@
 
 This repository contains the Monte Carlo experiment accompanying the proof of
 the outlier central limit theorems for mean-shift and covariance spikes.  The
-experiment checks the two closed-form asymptotic variances against empirical
-variances at increasing matrix dimensions.
+experiment simulates both spikes simultaneously, assigns the two sample roots
+by eigenvector overlap, and checks the centered and theoretically standardized
+statistics with normal Q-Q plots.
 
 ## Formulas checked
 
@@ -34,19 +35,19 @@ $\sqrt n(\widetilde\lambda-\lambda_*)$.
 - Random seed: `325042003`
 - Replications per model and dimension: `1000`
 - Dimensions: $n\in\{200,400,800\}$ and $d/n=0.5$
-- Mean-shift parameter: $\theta^2=2$
-- Covariance-spike parameter: $\ell=3$
+- Well-separated configuration: $\theta^2=2$ and $\ell=3$
+- Near-critical configuration: $\theta^2=0.9$ and $\ell=1.15$
 - Noise: independent standard Gaussian entries, scaled by $n^{-1/2}$
 
-The parameter choices are supercritical: $\theta^2>\sqrt c$ and
-$\ell>\sqrt c$.
+All four spikes are supercritical.  The near-critical configuration is used to
+show the slow, nonuniform finite-sample convergence as the phase boundary is
+approached; it is not covered by a uniform-in-the-spike version of the CLTs.
 
 ## Files
 
-- `code/variance_simulation.py`: Monte Carlo simulation and Q-Q plot generator.
-- `code/variance_simulation_results.csv`: numerical summary produced with the fixed
-  seed and settings above.
-- `../figures/variance_qq.png`: Q-Q diagnostics at $n=800$.
+- `code/clt_simulation.py`: Monte Carlo simulation and figure generator.
+- `code/clt_simulation_results.csv`: numerical summary produced with the fixed seed.
+- `figures/clt_qq_plot.png`: Q-Q diagnostics at $n=800$.
 
 ## Running the experiment
 
@@ -62,7 +63,7 @@ On Linux or macOS:
 ```bash
 source .venv/bin/activate
 pip install -r requirements.txt
-python code/variance_simulation.py
+python code/clt_simulation.py
 ```
 
 On Windows PowerShell:
@@ -70,23 +71,16 @@ On Windows PowerShell:
 ```powershell
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-python code\variance_simulation.py
+python code\clt_simulation.py
 ```
 
-The script overwrites `code/variance_simulation_results.csv` and writes
-`figures/variance_qq.png`.
+The script overwrites `code/clt_simulation_results.csv` and writes
+`figures/clt_qq_plot.png`.
 
 ## Recorded results
 
-| Model | $n$ | Empirical variance | Monte Carlo SE | Theoretical variance |
-|---|---:|---:|---:|---:|
-| Mean shift | 200 | 9.6244 | 0.4306 | 9.6250 |
-| Mean shift | 400 | 9.4647 | 0.4235 | 9.6250 |
-| Mean shift | 800 | 9.2010 | 0.4117 | 9.6250 |
-| Covariance spike | 200 | 29.6040 | 1.3246 | 30.2222 |
-| Covariance spike | 400 | 30.8920 | 1.3822 | 30.2222 |
-| Covariance spike | 800 | 29.2426 | 1.3084 | 30.2222 |
-
-The differences between the empirical and theoretical variances are of the
-same order as the reported Monte Carlo standard errors.
+The CSV records the scaled means, empirical variances, Monte Carlo standard
+errors, theoretical variances, and the overlap-association diagnostics used to
+interpret the Q-Q plots.  It intentionally contains no separate eigenvalue-
+position analysis.
 
